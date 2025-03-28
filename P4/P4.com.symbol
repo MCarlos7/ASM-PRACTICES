@@ -1,0 +1,21 @@
+< THE SYMBOL TABLE >  P4.com  --  emu8086 assembler version: 4.08 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+LOOP_POTENCIA            	0014C     	-1        	LABEL     	(NOSEG)   
+FIN_CALCULO              	0016D     	-1        	LABEL     	(NOSEG)   
+MULT                     	0016D     	-1        	LABEL     	(NOSEG)   
+BASE                     	0018F     	2         	VAR       	(NOSEG)   
+EXP                      	00191     	1         	VAR       	(NOSEG)   
+RES                      	00192     	2         	VAR       	(NOSEG)   
+D1                       	00196     	2         	VAR       	(NOSEG)   
+D2                       	00198     	2         	VAR       	(NOSEG)   
+P0                       	0019A     	2         	VAR       	(NOSEG)   
+NOMBRE                   	0019E     	1         	VAR       	(NOSEG)   
+ENTRADA                  	001BF     	1         	VAR       	(NOSEG)   
+SALIDA                   	001F9     	1         	VAR       	(NOSEG)   
+FIN                      	0021A     	-1        	LABEL     	(NOSEG)   
+===================================================================================================
+[ 14/03/2025  --  07:59:32 p. m. ] 
+< END >
+ 

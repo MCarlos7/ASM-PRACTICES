@@ -1,0 +1,128 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+P3.com -- emu8086 assembler version: 4.08  
+ 
+[ 28/02/2025  --  10:23:59 p. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       name "P3"
+[   2]        :                                       org 100h
+[   3]        :                                       
+[   4]        :                                       ;--------------------------------------------------
+[   5]        :                                       ; Modo de video y colores
+[   6]        :                                       
+[   7]    0100: B0 01                                 mov al, 1                ; Modo video
+[   8]    0102: B7 00                                 mov bh, 0
+[   9]    0104: B3 09                                 mov bl, 0000_1001b       ; Color
+[  10]        :                                       
+[  11]        :                                       ;--------------------------------------------------
+[  12]        :                                       ; Espera de tecla
+[  13]    0106: B4 00                                 mov ah, 0
+[  14]    0108: CD 16                                 int 16h          ; Espera de tecla
+[  15]        :                                       
+[  16]        :                                       ;--------------------------------------------------
+[  17]        :                                       ; SUMA
+[  18]        :                                       
+[  19]        :                                       
+[  20]    010A: B8 00 00                              mov ax, 0          ; Inicializar AX en 0
+[  21]    010D: BA 00 00                              mov dx, 0          ; Inicializar DX en 0 (para manejar el acarreo)
+[  22]        :                                       
+[  23]        :                                       ; Sumar el primer numero (direcciones 0x210 y 0x211)
+[  24]    0110: A1 10 02                              mov ax, [0x210]
+[  25]    0113: 03 D0                                 add dx, ax         ; Sumar a DX:AX
+[  26]        :                                       
+[  27]        :                                       ; Sumar el segundo numero (direcciones 0x212 y 0x213)
+[  28]    0115: A1 12 02                              mov ax, [0x212]
+[  29]    0118: 13 D0                                 adc dx, ax         ; Sumar con acarreo
+[  30]        :                                       
+[  31]        :                                       ; Sumar el tercer numero (direcciones 0x214 y 0x215)
+[  32]    011A: A1 14 02                              mov ax, [0x214]
+[  33]    011D: 13 D0                                 adc dx, ax
+[  34]        :                                       
+[  35]        :                                       ; Sumar el cuarto numero (direcciones 0x216 y 0x217)
+[  36]    011F: A1 16 02                              mov ax, [0x216]
+[  37]    0122: 13 D0                                 adc dx, ax
+[  38]        :                                       
+[  39]        :                                       ; Sumar el quinto numero (direcciones 0x218 y 0x219)
+[  40]    0124: A1 18 02                              mov ax, [0x218]
+[  41]    0127: 13 D0                                 adc dx, ax
+[  42]        :                                       
+[  43]        :                                       ; Guardar el resultado en formato little endian en 4 bytes
+[  44]    0129: 88 16 20 02                           mov [0x220], dl    ; Byte menos significativo del resultado
+[  45]    012D: 88 36 21 02                           mov [0x221], dh    ; Segundo byte
+[  46]    0131: A2 22 02                              mov [0x222], al    ; Tercer byte (si hubo acarreo)
+[  47]    0134: 88 26 23 02                           mov [0x223], ah    ; Cuarto byte (si hubo acarreo)
+[  48]        :                                       
+[  49]        :                                       ;--------------------------------------------------
+[  50]        :                                       ; Ajuste final de la pila: SP debe ser FFF8h
+[  51]    0138: BC F8 FF                              mov sp, 0FFF8h
+[  52]        :                                       
+[  53]        :                                       ;--------------------------------------------------
+[  54]        :                                       ; PRINT
+[  55]        :                                       
+[  56]        :                                       ; nombre
+[  57]    013B: BD 6B 01                              mov bp, offset nombre
+[  58]    013E: B9 21 00                              mov cx, nombre_T
+[  59]    0141: B2 0A                                 mov dl, 10       ; Columna
+[  60]    0143: B6 02                                 mov dh, 2        ; Fila
+[  61]    0145: B4 13                                 mov ah, 13h
+[  62]    0147: CD 10                                 int 10h
+[  63]        :                                       
+[  64]        :                                       ; direcciones de entrada
+[  65]    0149: BD 8C 01                              mov bp, offset entrada
+[  66]    014C: B9 36 00                              mov cx, entrada_T
+[  67]    014F: B2 0A                                 mov dl, 10
+[  68]    0151: B6 04                                 mov dh, 4
+[  69]    0153: B4 13                                 mov ah, 13h
+[  70]    0155: CD 10                                 int 10h
+[  71]        :                                       
+[  72]        :                                       ; salida (resultado)
+[  73]    0157: BD C2 01                              mov bp, offset salida
+[  74]    015A: B9 1C 00                              mov cx, salida_T
+[  75]    015D: B2 0A                                 mov dl, 10
+[  76]    015F: B6 06                                 mov dh, 6
+[  77]    0161: B4 13                                 mov ah, 13h
+[  78]    0163: CD 10                                 int 10h
+[  79]        :                                       
+[  80]        :                                       ;--------------------------------------------------
+[  81]        :                                       ; Espera de tecla y fin del programa
+[  82]    0165: B4 00                                 mov ah, 0
+[  83]    0167: CD 16                                 int 16h          ; Espera de tecla
+[  84]    0169: CD 20                                 int 20h          ; Finaliza el programa
+[  85]        :                                       
+[  86]        :                                       
+[  87]        :                                       ;--------------------------------------------------
+[  88]        :                                       ; DATOS
+[  89]        :                                       
+[  90]        :                                       ; Texto
+[  91]    016B: 41 6C 75 6D 6E 6F 3A 20 43 61 72 6C   nombre    db "Alumno: Carlos Alberto  Sec: D06", 0
+                6F 73 20 41 6C 62 65 72 74 6F 20 20 
+                53 65 63 3A 20 44 30 36 00          
+[  92]    018C: 45 6E 74 72 61 64 61 20 65 6E 20 6D   entrada    db "Entrada en memoria: 0210h, 0212h, 0214h, 0216h, 0218h", 0
+                65 6D 6F 72 69 61 3A 20 30 32 31 30 
+                68 2C 20 30 32 31 32 68 2C 20 30 32 
+                31 34 68 2C 20 30 32 31 36 68 2C 20 
+                30 32 31 38 68 00                   
+[  93]    01C2: 53 61 6C 69 64 61 20 61 6C 6D 61 63   salida    db "Salida almacenado en: 0220h", 0
+                65 6E 61 64 6F 20 65 6E 3A 20 30 32 
+                32 30 68 00                         
+[  94]    01DE:                                       fin:
+[  95]        :                                       
+[  96]        :                                       nombre_T = entrada - nombre
+[  97]        :                                       entrada_T = salida - entrada
+[  98]        :                                       salida_T = fin - salida
+[  99]        :                                       
+[ 100]        :                                       end
+[ 101]        :                                       
+[ 102]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================

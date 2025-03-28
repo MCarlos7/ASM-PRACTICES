@@ -1,0 +1,76 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+holamund.com -- emu8086 assembler version: 4.08  
+ 
+[ 30/01/2025  --  07:55:36 p. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       name "holamundo"
+[   2]        :                                       
+[   3]        :                                       org 100h
+[   4]        :                                       
+[   5]    0100: B0 01                                 	mov al, 1          ;Modo video
+[   6]    0102: B7 00                                 	mov bh, 0          ;Pagina de video
+[   7]    0104: B3 39                                 	mov bl, 0011_1001b ;Colores
+[   8]        :                                       	
+[   9]        :                                       	;//////////////////////////////////////////////
+[  10]    0106: B9 0E 00                              	mov cx, msg2 - offset msg1 ; calcula el tamaño del mensaje.
+[  11]    0109: B2 14                                 	mov dl, 20        ; Posicion
+[  12]    010B: B6 0B                                 	mov dh, 11       ; Posicion
+[  13]        :                                       	
+[  14]    010D: BD 32 01                              	mov bp, offset msg1  ;Apunta a msj1
+[  15]    0110: B4 13                                 	mov ah, 13h          ;Print cadena txt mode
+[  16]    0112: CD 10                                 	int 10h              ;Llamada a print
+[  17]        :                                       	
+[  18]        :                                       	;//////////////////////////////////////////////
+[  19]    0114: B9 27 00                              	mov cx, msg3 - offset msg2  ;Calcula la longitud de msg2 y la almacena en CX
+[  20]    0117: B2 09                                 	mov dl, 9           ; Posicion
+[  21]    0119: B6 0D                                 	mov dh, 13           ; Posicion
+[  22]        :                                       	
+[  23]    011B: BD 40 01                              	mov bp, offset msg2 ; Print
+[  24]    011E: B4 13                                 	mov ah, 13h
+[  25]    0120: CD 10                                 	int 10h
+[  26]        :                                       	
+[  27]        :                                       	;//////////////////////////////////////////////
+[  28]    0122: B9 2C 00                              	mov cx, msgend - offset msg3  ;Calcula la longitud de msg2 y la almacena en CX
+[  29]    0125: B2 07                                 	mov dl, 7           ; Posicion
+[  30]    0127: B6 0F                                 	mov dh, 15           ; Posicion
+[  31]        :                                       	
+[  32]    0129: BD 67 01                              	mov bp, offset msg3 ; Print
+[  33]    012C: B4 13                                 	mov ah, 13h
+[  34]    012E: CD 10                                 	int 10h
+[  35]        :                                       	
+[  36]        :                                       	
+[  37]        :                                       	
+[  38]        :                                       	
+[  39]    0130: EB 61                                 	jmp msgend           ; Salto a la etiqueta msgend
+[  40]        :                                       
+[  41]        :                                       	
+[  42]    0132: 48 6F 6C 61 20 4D 65 6E 73 61 6A 65   msg1    db "Hola Mensaje 1"
+                20 31                               
+[  43]    0140: 43 61 72 6C 6F 73 20 41 6C 62 65 72   msg2    db "Carlos Alberto Mariscal Romo 219804747 "
+                74 6F 20 4D 61 72 69 73 63 61 6C 20 
+                52 6F 6D 6F 20 32 31 39 38 30 34 37 
+                34 37 20                            
+[  44]    0167: 2F 5C 2F 5C 2F 5C 2F 5C 2F 5C 2F 5C   msg3    db "/\/\/\/\/\/\/\/\/\//\/\/\/\/\/\/\/\//\/\/\/\"
+                2F 5C 2F 5C 2F 5C 2F 2F 5C 2F 5C 2F 
+                5C 2F 5C 2F 5C 2F 5C 2F 5C 2F 5C 2F 
+                2F 5C 2F 5C 2F 5C 2F 5C             
+[  45]        :                                       
+[  46]    0193:                                       msgend:
+[  47]    0193: B4 00                                 mov ah,0
+[  48]    0195: CD 16                                 int 16h     ; Input teclado
+[  49]    0197: CD 20                                 int 20h     ; Finalizacion
+[  50]        :                                       
+[  51]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================

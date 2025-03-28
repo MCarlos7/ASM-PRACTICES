@@ -1,0 +1,153 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+P4.com -- emu8086 assembler version: 4.08  
+ 
+[ 14/03/2025  --  07:59:32 p. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       name "P4"
+[   2]        :                                       org 100h
+[   3]        :                                       
+[   4]        :                                       ;--------------------------------------------------
+[   5]        :                                       ; Modo de video y colores
+[   6]        :                                       
+[   7]    0100: B0 01                                 mov al, 1                ; Modo video
+[   8]    0102: B7 00                                 mov bh, 0
+[   9]    0104: B3 09                                 mov bl, 0000_1001b       ; Color
+[  10]        :                                       
+[  11]        :                                       ;--------------------------------------------------
+[  12]        :                                       ; PRINT
+[  13]        :                                       
+[  14]        :                                       ; nombre
+[  15]    0106: BD 9E 01                              mov bp, offset nombre
+[  16]    0109: B9 21 00                              mov cx, nombre_T
+[  17]    010C: B2 0A                                 mov dl, 10       ; Columna
+[  18]    010E: B6 02                                 mov dh, 2        ; Fila
+[  19]    0110: B4 13                                 mov ah, 13h
+[  20]    0112: CD 10                                 int 10h
+[  21]        :                                       
+[  22]        :                                       ; entrada
+[  23]    0114: BD BF 01                              mov bp, offset entrada
+[  24]    0117: B9 3A 00                              mov cx, entrada_T
+[  25]    011A: B2 0A                                 mov dl, 10
+[  26]    011C: B6 04                                 mov dh, 4
+[  27]    011E: B4 13                                 mov ah, 13h
+[  28]    0120: CD 10                                 int 10h
+[  29]        :                                       
+[  30]        :                                       ; salida (resultado)
+[  31]    0122: BD F9 01                              mov bp, offset salida
+[  32]    0125: B9 21 00                              mov cx, salida_T
+[  33]    0128: B2 0A                                 mov dl, 10
+[  34]    012A: B6 06                                 mov dh, 6
+[  35]    012C: B4 13                                 mov ah, 13h
+[  36]    012E: CD 10                                 int 10h
+[  37]        :                                       ;--------------------------------------------------
+[  38]        :                                       ; Espera de tecla
+[  39]    0130: B4 00                                 mov ah, 0
+[  40]    0132: CD 16                                 int 16h          ; Espera de tecla
+[  41]        :                                       
+[  42]        :                                       ;--------------------------------------------------
+[  43]        :                                       ; Cálculo de potencia (Base^Exponente)
+[  44]        :                                       
+[  45]    0134: A1 8F 01                              mov ax, [Base]    ; Cargar Base en AX
+[  46]    0137: 33 D2                                 xor dx, dx        ; Limpiar DX (Base es de 16 bits)
+[  47]    0139: 8A 0E 91 01                           mov cl, [Exp]     ; Cargar el exponente (8 bits) en CL
+[  48]    013D: B5 00                                 mov ch, 0
+[  49]    013F: A3 92 01                              mov [Res], ax     ; Inicializar Res con Base
+[  50]    0142: 89 16 94 01                           mov [Res+2], dx
+[  51]        :                                       
+[  52]    0146: 49                                    dec cx          ; Se resta 1 (si exp=1, CX queda en 0 y se salta el bucle)
+[  53]    0147: 83 F9 00                              cmp cx, 0
+[  54]    014A: 74 21                                 je fin_calculo
+[  55]        :                                       
+[  56]    014C:                                       loop_potencia:
+[  57]    014C: 51                                    push cx              ; Guardar contador
+[  58]    014D: A1 92 01                              mov ax, [Res]        ; Obtener el resultado actual (16 bits)
+[  59]    0150: A3 96 01                              mov [D1], ax         ; Factor 1 = resultado actual
+[  60]    0153: A1 8F 01                              mov ax, [Base]       ; Factor 2 = Base
+[  61]    0156: A3 98 01                              mov [D2], ax
+[  62]    0159: E8 11 00                              call mult            ; Multiplicar D1 * D2
+[  63]    015C: A1 9A 01                              mov ax, [P0]         ; Actualizar resultado parcial
+[  64]    015F: 8B 16 9C 01                           mov dx, [P0+2]
+[  65]    0163: A3 92 01                              mov [Res], ax
+[  66]    0166: 89 16 94 01                           mov [Res+2], dx
+[  67]    016A: 59                                    pop cx               ; Restaurar contador
+[  68]    016B: E2 DF                                 loop loop_potencia   ; Repetir CX veces
+[  69]        :                                       
+[  70]    016D:                                       fin_calculo:
+[  71]        :                                       
+[  72]        :                                       ;--------------------------------------------------
+[  73]        :                                       ;Subrutina de multiplicacion de 16x16 bits
+[  74]        :                                       
+[  75]    016D:                                       mult:
+[  76]    016D: 50                                    push ax        ; Guardar estado de AX
+[  77]    016E: 53                                    push bx        ; Guardar estado de BX
+[  78]    016F: 51                                    push cx        ; Guardar estado de CX
+[  79]    0170: 52                                    push dx        ; Guardar estado de DX
+[  80]    0171: A1 96 01                              mov ax, [D1]   ; Cargar D1 en AX
+[  81]    0174: 8B 16 98 01                           mov dx, [D2]   ; Cargar D2 en DX
+[  82]    0178: F7 E2                                 mul dx         ; Multiplicar AX * DX, resultado en DX:AX
+[  83]    017A: A3 9A 01                              mov [P0], ax   ; Guardar parte baja en P0
+[  84]    017D: 89 16 9C 01                           mov [P0+2], dx ; Guardar parte alta en P0+2
+[  85]    0181: 5A                                    pop dx         ; Restaurar DX
+[  86]    0182: 59                                    pop cx         ; Restaurar CX
+[  87]    0183: 5B                                    pop bx         ; Restaurar BX
+[  88]    0184: 58                                    pop ax         ; Restaurar AX
+[  89]    0185: C3                                    ret            ; Retornar de la subrutina
+[  90]        :                                       
+[  91]        :                                       ;--------------------------------------------------
+[  92]        :                                       ; Ajuste final de la pila: SP debe ser FFF8h
+[  93]    0186: BC F8 FF                              mov sp, 0FFF8h
+[  94]        :                                       
+[  95]        :                                       ;--------------------------------------------------
+[  96]        :                                       ; Espera de tecla y fin del programa
+[  97]    0189: B4 00                                 mov ah, 0
+[  98]    018B: CD 16                                 int 16h          ; Espera de tecla
+[  99]    018D: CD 20                                 int 20h          ; Finaliza el programa
+[ 100]        :                                       
+[ 101]        :                                       ;--------------------------------------------------
+[ 102]        :                                       ; DATOS
+[ 103]        :                                       
+[ 104]        :                                       ; Variables
+[ 105]        :                                       
+[ 106]    018F: 00 00                                 Base    dw 0      ; Entrada de 16 bits
+[ 107]    0191: 00                                    Exp     db 0      ; Entrada de 8 bits
+[ 108]    0192: 00 00 00 00                           Res     dd 0      ; Resultado de 32 bits en big-endian
+[ 109]        :                                       
+[ 110]    0196: 00 00                                 D1      dw 0      ; Variable temporal
+[ 111]    0198: 00 00                                 D2      dw 0
+[ 112]        :                                       
+[ 113]    019A: 00 00 00 00                           P0      dd 0      ; Variable para resultados parciales
+[ 114]        :                                       
+[ 115]        :                                       ; Texto
+[ 116]    019E: 41 6C 75 6D 6E 6F 3A 20 43 61 72 6C   nombre    db "Alumno: Carlos Alberto  Sec: D06", 0
+                6F 73 20 41 6C 62 65 72 74 6F 20 20 
+                53 65 63 3A 20 44 30 36 00          
+[ 117]    01BF: 49 6E 74 72 6F 64 75 63 65 20 42 61   entrada   db "Introduce Base (16 bits, Big-Endian) y Exponente (8 bits)", 0
+                73 65 20 28 31 36 20 62 69 74 73 2C 
+                20 42 69 67 2D 45 6E 64 69 61 6E 29 
+                20 79 20 45 78 70 6F 6E 65 6E 74 65 
+                20 28 38 20 62 69 74 73 29 00       
+[ 118]    01F9: 52 65 73 75 6C 74 61 64 6F 20 28 33   salida    db "Resultado (32 bits, Big-Endian):", 0
+                32 20 62 69 74 73 2C 20 42 69 67 2D 
+                45 6E 64 69 61 6E 29 3A 00          
+[ 119]    021A:                                       fin:
+[ 120]        :                                       
+[ 121]        :                                       nombre_T  = entrada - nombre
+[ 122]        :                                       entrada_T = salida - entrada
+[ 123]        :                                       salida_T  = fin - salida
+[ 124]        :                                       
+[ 125]        :                                       end
+[ 126]        :                                       
+[ 127]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================
