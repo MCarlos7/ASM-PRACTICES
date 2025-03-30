@@ -1,0 +1,32 @@
+< THE SYMBOL TABLE >  P5.com  --  emu8086 assembler version: 4.08 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+NOMBRE                   	00103     	1         	VAR       	(NOSEG)   
+MENSAJE                  	0012A     	1         	VAR       	(NOSEG)   
+RESULTADO                	00157     	1         	VAR       	(NOSEG)   
+CADNUM                   	0016A     	1         	VAR       	(NOSEG)   
+N32                      	0016F     	1         	VAR       	(NOSEG)   
+B                        	00173     	1         	VAR       	(NOSEG)   
+BCD                      	00174     	1         	VAR       	(NOSEG)   
+GET_STRING               	0017E     	-1        	NEAR      	(NOSEG)   
+WAIT_FOR_KEY_LOC1TMP     	0018B     	-1        	LABEL     	(NOSEG)   
+ADD_TO_BUFFER_LOC2TMP    	001B5     	-1        	LABEL     	(NOSEG)   
+EXIT_LOC2TMP             	001C3     	-1        	LABEL     	(NOSEG)   
+EMPTY_BUFFER_LOC1TMP     	001C6     	-1        	LABEL     	(NOSEG)   
+SKIP_PROC_GET_STRING_LOC1TMP	001CB     	-1        	LABEL     	(NOSEG)   
+PRINT_STRING             	001CD     	-1        	NEAR      	(NOSEG)   
+NEXT_CHAR_LOC3TMP        	001CF     	-1        	LABEL     	(NOSEG)   
+PRINTED_LOC3TMP          	001DC     	-1        	LABEL     	(NOSEG)   
+SKIP_PROC_PRINT_STRING_LOC3TMP	001DF     	-1        	LABEL     	(NOSEG)   
+NUMBYTE                  	001DF     	-1        	LABEL     	(NOSEG)   
+ASC2NUM                  	001F7     	-1        	LABEL     	(NOSEG)   
+F_ASC                    	00205     	-1        	LABEL     	(NOSEG)   
+HEX_TO_BCD               	00206     	-1        	LABEL     	(NOSEG)   
+CONVERT_LOOP             	00218     	-1        	LABEL     	(NOSEG)   
+INICIO                   	0023E     	-1        	LABEL     	(NOSEG)   
+CONV_LOOP                	00269     	-1        	LABEL     	(NOSEG)   
+===================================================================================================
+[ 28/03/2025  --  08:49:23 p. m. ] 
+< END >
+ 

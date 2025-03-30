@@ -1,0 +1,151 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+P5.com -- emu8086 assembler version: 4.08  
+ 
+[ 28/03/2025  --  08:49:23 p. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       include 'emu8086.inc'
+[   2]        :                                       
+[   3]        :                                       org 0100h
+[   4]    0100: E9 3B 01                              jmp inicio
+[   5]        :                                       
+[   6]    0103: 4E 6F 6D 62 72 65 3A 20 43 61 72 6C   nombre  db  "Nombre: Carlos Alberto Mariscal Romo", 0Dh, 0Ah, "$"
+                6F 73 20 41 6C 62 65 72 74 6F 20 4D 
+                61 72 69 73 63 61 6C 20 52 6F 6D 6F 
+                0D 0A 24                            
+[   7]    012A: 49 6E 67 72 65 73 65 20 75 6E 20 6E   mensaje db  "Ingrese un numero hexadecimal de 4 digitos: $"
+                75 6D 65 72 6F 20 68 65 78 61 64 65 
+                63 69 6D 61 6C 20 64 65 20 34 20 64 
+                69 67 69 74 6F 73 3A 20 24          
+[   8]    0157: 52 65 73 75 6C 74 61 64 6F 20 65 6E   resultado db "Resultado en BCD: $"
+                20 42 43 44 3A 20 24                
+[   9]    016A: 00 00 00 00 00                        cadnum  db  5 dup(?)
+[  10]    016F: 00 00 00 00                           n32     db  4 dup(?)
+[  11]    0173: 00                                    b       db  ?
+[  12]    0174: 24 24 24 24 24 24 24 24               bcd     db  8 dup('$')
+[  13]    017C: EB 4D 50 51 57 52 B9 00 00 83 FA 01   DEFINE_GET_STRING
+                76 3C 4A B4 00 CD 16 3C 0D 74 30 3C 
+                08 75 1E E3 F2 49 4F 50 B0 08 B4 0E 
+                CD 10 58 50 B0 20 B4 0E CD 10 58 50 
+                B0 08 B4 0E CD 10 58 EB D6 3B CA 73 
+                D2 88 05 47 41 B4 0E CD 10 EB C8 C6 
+                05 00 5A 5F 59 58 C3                
+[  14]    01CB: EB 12 50 56 8A 04 3C 00 74 07 46 B4   DEFINE_PRINT_STRING
+                0E CD 10 EB F3 5E 58 C3             
+[  15]        :                                       
+[  16]    01DF:                                       numbyte:
+[  17]    01DF: E8 15 00                              call asc2num
+[  18]    01E2: B3 10                                 mov  bl, 16
+[  19]    01E4: F6 E3                                 mul  bl
+[  20]    01E6: A2 73 01                              mov  [b], al
+[  21]    01E9: 47                                    inc  di
+[  22]    01EA: 8A 05                                 mov  al, [di]
+[  23]    01EC: E8 08 00                              call asc2num
+[  24]    01EF: 02 06 73 01                           add  al, [b]
+[  25]    01F3: A2 73 01                              mov  [b], al
+[  26]    01F6: C3                                    ret
+[  27]        :                                       
+[  28]    01F7:                                       asc2num:
+[  29]    01F7: 2C 30                                 sub  al, 48
+[  30]    01F9: 3C 09                                 cmp  al, 9
+[  31]    01FB: 7E 08                                 jle  f_asc
+[  32]    01FD: 2C 07                                 sub  al, 7
+[  33]    01FF: 3C 0F                                 cmp  al, 15
+[  34]    0201: 7E 02                                 jle  f_asc
+[  35]    0203: 2C 20                                 sub  al, 32
+[  36]    0205: C3                                    f_asc:  ret
+[  37]        :                                       
+[  38]    0206:                                       hex_to_bcd:
+[  39]    0206: B8 00 00                              mov ax, 0
+[  40]    0209: B9 04 00                              mov cx, 4
+[  41]    020C: BE 6F 01                              lea si, n32
+[  42]    020F: BF 06 00                              mov di, 6
+[  43]    0212: BB 0A 00                              mov bx, 10
+[  44]    0215: BD 74 01                              lea bp, bcd
+[  45]    0218:                                       convert_loop:
+[  46]    0218: BA 00 00                              mov dx, 0
+[  47]    021B: 8A 04                                 mov al, [si]
+[  48]    021D: F7 F3                                 div bx
+[  49]    021F: 80 C4 30                              add ah, 30h
+[  50]    0222: 88 23                                 mov [bp + di], ah
+[  51]    0224: 4F                                    dec di
+[  52]    0225: 8A C2                                 mov al, dl
+[  53]    0227: F7 F3                                 div bx
+[  54]    0229: 80 C4 30                              add ah, 30h
+[  55]    022C: 88 23                                 mov [bp + di], ah
+[  56]    022E: 4F                                    dec di
+[  57]    022F: 8A C2                                 mov al, dl
+[  58]    0231: 04 30                                 add al, 30h
+[  59]    0233: 88 03                                 mov [bp + di], al
+[  60]    0235: 4F                                    dec di
+[  61]    0236: 46                                    inc si
+[  62]    0237: E2 DF                                 loop convert_loop
+[  63]    0239: C6 46 07 24                           mov byte ptr [bp + 7], '$'  ; Terminador de cadena
+[  64]    023D: C3                                    ret
+[  65]        :                                       
+[  66]    023E:                                       inicio:
+[  67]    023E: BC F8 FF                              mov sp, 0FFF8h   ; Ajustar el SP según el requisito
+[  68]        :                                       
+[  69]    0241: BA 03 01                              lea dx, nombre
+[  70]    0244: E8 86 FF                              call print_string
+[  71]    0247: B4 02                                 mov ah, 02h
+[  72]    0249: B2 0D                                 mov dl, 0Dh
+[  73]    024B: CD 21                                 int 21h
+[  74]    024D: B2 0A                                 mov dl, 0Ah
+[  75]    024F: CD 21                                 int 21h
+[  76]        :                                       
+[  77]    0251: BA 2A 01                              lea dx, mensaje
+[  78]    0254: E8 76 FF                              call print_string
+[  79]        :                                       
+[  80]    0257: BF 6A 01                              lea di, cadnum
+[  81]    025A: BA 05 00                              mov dx, 5
+[  82]    025D: E8 1E FF                              call get_string
+[  83]        :                                       
+[  84]    0260: BF 6A 01                              lea di, cadnum
+[  85]    0263: BE 6F 01                              lea si, n32
+[  86]    0266: B9 04 00                              mov cx, 4
+[  87]    0269:                                       conv_loop:
+[  88]    0269: 8A 05                                 mov  al, [di]
+[  89]    026B: E8 71 FF                              call numbyte
+[  90]    026E: A0 73 01                              mov  al, [b]
+[  91]    0271: 88 04                                 mov  [si], al
+[  92]    0273: 46                                    inc  si
+[  93]    0274: 47                                    inc  di
+[  94]    0275: E2 F2                                 loop conv_loop
+[  95]        :                                       
+[  96]    0277: E8 8C FF                              call hex_to_bcd
+[  97]        :                                       
+[  98]    027A: B4 02                                 mov ah, 02h
+[  99]    027C: B2 0D                                 mov dl, 0Dh
+[ 100]    027E: CD 21                                 int 21h
+[ 101]    0280: B2 0A                                 mov dl, 0Ah
+[ 102]    0282: CD 21                                 int 21h
+[ 103]        :                                       
+[ 104]    0284: BA 57 01                              lea dx, resultado
+[ 105]    0287: E8 43 FF                              call print_string
+[ 106]    028A: BA 74 01                              lea dx, bcd
+[ 107]    028D: E8 3D FF                              call print_string
+[ 108]        :                                       
+[ 109]    0290: B4 02                                 mov ah, 02h
+[ 110]    0292: B2 0D                                 mov dl, 0Dh
+[ 111]    0294: CD 21                                 int 21h
+[ 112]    0296: B2 0A                                 mov dl, 0Ah
+[ 113]    0298: CD 21                                 int 21h
+[ 114]        :                                       
+[ 115]    029A: CD 20                                 int  20h   ; Finaliza el programa
+[ 116]        :                                       
+[ 117]        :                                       END
+[ 118]        :                                       
+[ 119]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================

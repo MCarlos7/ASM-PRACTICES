@@ -40,7 +40,7 @@ org 100h
     int 16h          ; Espera de tecla
     
 ;--------------------------------------------------
-; Cálculo de potencia (Base^Exponente)
+; Cï¿½lculo de potencia (Base^Exponente)
 
     mov ax, [Base]    ; Cargar Base en AX
     xor dx, dx        ; Limpiar DX (Base es de 16 bits)
