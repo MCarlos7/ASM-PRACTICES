@@ -1,0 +1,397 @@
+EMU8086 GENERATED LISTING. MACHINE CODE <- SOURCE.
+ 
+P6v2.com -- emu8086 assembler version: 4.08  
+ 
+[ 25/04/2025  --  08:36:28 p. m. ] 
+ 
+===================================================================================================
+[LINE]     LOC: MACHINE CODE                          SOURCE
+===================================================================================================
+ 
+[   1]        :                                       org 100h
+[   2]        :                                       
+[   3]        :                                       ; --- Segmento de Datos ---
+[   4]    0100: 41 6C 75 6D 6E 6F 3A 20 43 61 72 6C   alumno_msg    db "Alumno: Carlos Alberto, Sec: D06", 0dh, 0ah, '$'
+                6F 73 20 41 6C 62 65 72 74 6F 2C 20 
+                53 65 63 3A 20 44 30 36 0D 0A 24    
+[   5]    0123: 49 6E 67 72 65 73 65 20 75 6E 61 20   prompt_msg    db "Ingrese una ecuación aritmética con operandos de 16 bits con signo (ej: 5+3*2-8/4): ", '$'
+                65 63 75 61 63 69 C3 B3 6E 20 61 72 
+                69 74 6D C3 A9 74 69 63 61 20 63 6F 
+                6E 20 6F 70 65 72 61 6E 64 6F 73 20 
+                64 65 20 31 36 20 62 69 74 73 20 63 
+                6F 6E 20 73 69 67 6E 6F 20 28 65 6A 
+                3A 20 35 2B 33 2A 32 2D 38 2F 34 29 
+                3A 20 24                            
+[   6]    017A: 45 6C 20 72 65 73 75 6C 74 61 64 6F   result_msg    db "El resultado es: ", '$'
+                20 65 73 3A 20 24                   
+[   7]    018C: 0D 0A 24                              newline       db 0dh, 0ah, '$'
+[   8]    018F: 3C 00 20 20 20 20 20 20 20 20 20 20   input_buffer  db 60, ?, 60 dup (' ')
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20 20 20 20 20 20 20 20 20 20 20 
+                20 20                               
+[   9]    01CD: 00 00 00 00 00 00 00 00 00 00 00 00   token_buffer  dw 20 dup (?)
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00                         
+[  10]    01F5: 00 00 00 00 00 00 00 00 00 00 00 00   temp_stack    dw 20 dup (?)
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00 00 00 00 00 00 00 00 00 
+                00 00 00 00                         
+[  11]    021D: 1D 02                                 temp_stack_ptr dw offset temp_stack + 40
+[  12]    021F: 00 00                                 token_count   dw 0
+[  13]        :                                       
+[  14]        :                                       ; Mensajes de error
+[  15]    0221: 45 72 72 6F 72 3A 20 4C 61 20 65 63   err_input_long   db "Error: La ecuación excede la longitud máxima.", '$'
+                75 61 63 69 C3 B3 6E 20 65 78 63 65 
+                64 65 20 6C 61 20 6C 6F 6E 67 69 74 
+                75 64 20 6D C3 A1 78 69 6D 61 2E 24 
+                                                    
+[  16]    0251: 45 72 72 6F 72 3A 20 43 61 72 C3 A1   err_invalid_char db "Error: Carácter inválido en la ecuación.", '$'
+                63 74 65 72 20 69 6E 76 C3 A1 6C 69 
+                64 6F 20 65 6E 20 6C 61 20 65 63 75 
+                61 63 69 C3 B3 6E 2E 24             
+[  17]    027D: 45 72 72 6F 72 3A 20 53 65 20 65 73   err_no_operand   db "Error: Se esperaban más operandos.", '$'
+                70 65 72 61 62 61 6E 20 6D C3 A1 73 
+                20 6F 70 65 72 61 6E 64 6F 73 2E 24 
+                                                    
+[  18]    02A1: 45 72 72 6F 72 3A 20 44 69 76 69 73   err_div_by_zero  db "Error: División por cero.", '$'
+                69 C3 B3 6E 20 70 6F 72 20 63 65 72 
+                6F 2E 24                            
+[  19]    02BC: 45 72 72 6F 72 3A 20 44 65 73 62 6F   err_overflow     db "Error: Desbordamiento aritmético.", '$'
+                72 64 61 6D 69 65 6E 74 6F 20 61 72 
+                69 74 6D C3 A9 74 69 63 6F 2E 24    
+[  20]    02DF: 45 72 72 6F 72 3A 20 45 72 72 6F 72   err_syntax       db "Error: Error de sintaxis en la ecuación.", '$'
+                20 64 65 20 73 69 6E 74 61 78 69 73 
+                20 65 6E 20 6C 61 20 65 63 75 61 63 
+                69 C3 B3 6E 2E 24                   
+[  21]        :                                       
+[  22]        :                                       ; --- Segmento de Código ---
+[  23]        :                                       code_segment segment
+[  24]        :                                       assume cs:code_segment
+[  25]        :                                       
+[  26]    0310:                                       start:
+[  27]    0310: BC F8 FF                              mov sp, 0FFF8h
+[  28]        :                                       
+[  29]    0313: B4 09                                 mov ah, 09h
+[  30]    0315: BA 00 01                              lea dx, alumno_msg
+[  31]    0318: CD 21                                 int 21h
+[  32]    031A: E8 B7 01                              call print_newline
+[  33]        :                                       
+[  34]    031D: B4 09                                 mov ah, 09h
+[  35]    031F: BA 23 01                              lea dx, prompt_msg
+[  36]    0322: CD 21                                 int 21h
+[  37]        :                                       
+[  38]    0324: B4 0A                                 mov ah, 0Ah
+[  39]    0326: BA 8F 01                              lea dx, input_buffer
+[  40]    0329: CD 21                                 int 21h
+[  41]        :                                       
+[  42]    032B: 8A 1E 90 01                           mov bl, input_buffer[1]
+[  43]    032F: B7 00                                 mov bh, 0
+[  44]    0331: BF 91 01                              lea di, input_buffer[2]
+[  45]    0334: 03 FB                                 add di, bx
+[  46]    0336: C6 05 24                              mov byte ptr [di], '$'
+[  47]        :                                       
+[  48]    0339: E8 25 00                              call tokenize_equation
+[  49]    033C: E8 D7 00                              call evaluate_equation
+[  50]        :                                       
+[  51]    033F: B4 09                                 mov ah, 09h
+[  52]    0341: BA 7A 01                              lea dx, result_msg
+[  53]    0344: CD 21                                 int 21h
+[  54]        :                                       
+[  55]    0346: E8 5A 01                              call print_signed_number
+[  56]    0349: E8 88 01                              call print_newline
+[  57]        :                                       
+[  58]    034C: B8 00 4C                              mov ax, 4C00h
+[  59]    034F: CD 20                                 int 20h
+[  60]        :                                       
+[  61]        :                                       ; --- Subrutinas ---
+[  62]        :                                       
+[  63]    0351:                                       handle_error proc near
+[  64]    0351: 50                                    push ax
+[  65]    0352: 52                                    push dx
+[  66]    0353: B4 09                                 mov ah, 09h
+[  67]    0355: CD 21                                 int 21h
+[  68]    0357: E8 7A 01                              call print_newline
+[  69]    035A: 5A                                    pop dx
+[  70]    035B: 58                                    pop ax
+[  71]    035C: B8 00 4C                              mov ax, 4C00h
+[  72]    035F: CD 20                                 int 20h
+[  73]        :                                       handle_error endp
+[  74]        :                                       
+[  75]    0361:                                       tokenize_equation proc near
+[  76]    0361: 56                                    push si
+[  77]    0362: 57                                    push di
+[  78]    0363: 50                                    push ax
+[  79]    0364: 51                                    push cx
+[  80]    0365: 53                                    push bx
+[  81]    0366: 52                                    push dx
+[  82]        :                                       
+[  83]    0367: BE 91 01                              lea si, input_buffer[2]
+[  84]    036A: BF CD 01                              lea di, token_buffer
+[  85]    036D: C7 06 1F 02 00 00                     mov word ptr [token_count], 0
+[  86]        :                                       
+[  87]    0373:                                       next_token:
+[  88]    0373: 8A 04                                 mov al, [si]
+[  89]    0375: 3C 24                                 cmp al, '$'
+[  90]    0377: 75 03 E9 93 00                        je tokenize_done
+[  91]        :                                       
+[  92]    037C: 3C 20                                 cmp al, ' '
+[  93]    037E: 75 03 E9 88 00                        je skip_char
+[  94]        :                                       
+[  95]    0383: 3C 2D                                 cmp al, '-'
+[  96]    0385: 74 20                                 je process_operand
+[  97]    0387: 3C 2B                                 cmp al, '+'
+[  98]    0389: 74 1C                                 je process_operand
+[  99]    038B: 3C 30                                 cmp al, '0'
+[ 100]    038D: 7C 06                                 jl check_operator
+[ 101]    038F: 3C 39                                 cmp al, '9'
+[ 102]    0391: 7F 02                                 jg check_operator
+[ 103]    0393: EB 12                                 jmp process_operand
+[ 104]        :                                       
+[ 105]    0395:                                       check_operator:
+[ 106]    0395: 3C 2B                                 cmp al, '+'
+[ 107]    0397: 74 60                                 je save_operator
+[ 108]    0399: 3C 2D                                 cmp al, '-'
+[ 109]    039B: 74 5C                                 je save_operator
+[ 110]    039D: 3C 2A                                 cmp al, '*'
+[ 111]    039F: 74 58                                 je save_operator
+[ 112]    03A1: 3C 2F                                 cmp al, '/'
+[ 113]    03A3: 74 54                                 je save_operator
+[ 114]    03A5: EB 5E                                 jmp invalid_char
+[ 115]        :                                       
+[ 116]    03A7:                                       process_operand:
+[ 117]    03A7: B9 00 00                              mov cx, 0
+[ 118]    03AA: BB 00 00                              mov bx, 0
+[ 119]    03AD: B2 00                                 mov dl, 0
+[ 120]    03AF: 3C 2D                                 cmp al, '-'
+[ 121]    03B1: 75 05                                 jne check_plus_sign
+[ 122]    03B3: B2 01                                 mov dl, 1
+[ 123]    03B5: 46                                    inc si
+[ 124]    03B6: EB 07                                 jmp read_digit
+[ 125]    03B8:                                       check_plus_sign:
+[ 126]    03B8: 3C 2B                                 cmp al, '+'
+[ 127]    03BA: 75 03                                 jne read_digit
+[ 128]    03BC: 46                                    inc si
+[ 129]    03BD: EB 00                                 jmp read_digit
+[ 130]        :                                       
+[ 131]    03BF:                                       read_digit:
+[ 132]    03BF: 8A 04                                 mov al, [si]
+[ 133]    03C1: 3C 30                                 cmp al, '0'
+[ 134]    03C3: 7C 1C                                 jl save_operand
+[ 135]    03C5: 3C 39                                 cmp al, '9'
+[ 136]    03C7: 7F 18                                 jg save_operand
+[ 137]    03C9: 2C 30                                 sub al, '0'
+[ 138]    03CB: B4 00                                 mov ah, 0
+[ 139]    03CD: 53                                    push bx
+[ 140]    03CE: BB 0A 00                              mov bx, 10
+[ 141]    03D1: F7 E3                                 mul bx
+[ 142]    03D3: 5B                                    pop bx
+[ 143]    03D4: 03 C3                                 add ax, bx
+[ 144]    03D6: 73 03                                 jnc continue_operand
+[ 145]    03D8: E9 BC 00                              jmp overflow_error
+[ 146]        :                                       
+[ 147]    03DB:                                       continue_operand:
+[ 148]    03DB: 8B D8                                 mov bx, ax
+[ 149]    03DD: 46                                    inc si
+[ 150]    03DE: 41                                    inc cx
+[ 151]    03DF: EB DE                                 jmp read_digit
+[ 152]        :                                       
+[ 153]    03E1:                                       save_operand:
+[ 154]    03E1: 83 F9 00                              cmp cx, 0
+[ 155]    03E4: 74 1F                                 je invalid_char
+[ 156]    03E6: 80 FA 01                              cmp dl, 1
+[ 157]    03E9: 75 02                                 jne store_operand
+[ 158]    03EB: F7 DB                                 neg bx
+[ 159]    03ED:                                       store_operand:
+[ 160]    03ED: 89 1D                                 mov [di], bx
+[ 161]    03EF: 83 C7 02                              add di, 2
+[ 162]    03F2: FF 06 1F 02                           inc word ptr [token_count]
+[ 163]    03F6: E9 7A FF                              jmp next_token
+[ 164]        :                                       
+[ 165]    03F9:                                       save_operator:
+[ 166]    03F9: B4 00                                 mov ah, 0
+[ 167]    03FB: 89 05                                 mov [di], ax
+[ 168]    03FD: FF 06 1F 02                           inc word ptr [token_count]
+[ 169]    0401: 46                                    inc si
+[ 170]    0402: E9 6E FF                              jmp next_token
+[ 171]        :                                       
+[ 172]    0405:                                       invalid_char:
+[ 173]    0405: BA 51 02                              lea dx, err_invalid_char
+[ 174]    0408: E8 46 FF                              call handle_error
+[ 175]        :                                       
+[ 176]    040B:                                       skip_char:
+[ 177]    040B: 46                                    inc si
+[ 178]    040C: E9 64 FF                              jmp next_token
+[ 179]        :                                       
+[ 180]    040F:                                       tokenize_done:
+[ 181]    040F: 5A                                    pop dx
+[ 182]    0410: 5B                                    pop bx
+[ 183]    0411: 59                                    pop cx
+[ 184]    0412: 58                                    pop ax
+[ 185]    0413: 5F                                    pop di
+[ 186]    0414: 5E                                    pop si
+[ 187]    0415: C3                                    ret
+[ 188]        :                                       tokenize_equation endp
+[ 189]        :                                       
+[ 190]    0416:                                       evaluate_equation proc near
+[ 191]    0416: 56                                    push si
+[ 192]    0417: 50                                    push ax
+[ 193]    0418: 53                                    push bx
+[ 194]    0419: 51                                    push cx
+[ 195]    041A: 52                                    push dx
+[ 196]        :                                       
+[ 197]    041B: BE CD 01                              lea si, token_buffer
+[ 198]    041E: 8B 0E 1F 02                           mov cx, word ptr [token_count]
+[ 199]    0422: 83 F9 00                              cmp cx, 0
+[ 200]    0425: 74 50                                 je no_operands_error
+[ 201]        :                                       
+[ 202]    0427: 8B 04                                 mov ax, [si]
+[ 203]    0429: 83 C6 02                              add si, 2
+[ 204]    042C: 49                                    dec cx
+[ 205]        :                                       
+[ 206]    042D:                                       evaluate_loop:
+[ 207]    042D: 83 F9 00                              cmp cx, 0
+[ 208]    0430: 74 43                                 je evaluation_done
+[ 209]        :                                       
+[ 210]    0432: 8B 1C                                 mov bx, [si]
+[ 211]    0434: 83 C6 02                              add si, 2
+[ 212]    0437: 49                                    dec cx
+[ 213]        :                                       
+[ 214]    0438: 83 F9 00                              cmp cx, 0
+[ 215]    043B: 7C 4A                                 jl syntax_error
+[ 216]        :                                       
+[ 217]    043D: 8B 14                                 mov dx, [si]
+[ 218]    043F: 83 C6 02                              add si, 2
+[ 219]    0442: 49                                    dec cx
+[ 220]        :                                       
+[ 221]    0443: 80 FB 2B                              cmp bl, '+'
+[ 222]    0446: 74 11                                 je do_addition
+[ 223]    0448: 80 FB 2D                              cmp bl, '-'
+[ 224]    044B: 74 12                                 je do_subtraction
+[ 225]    044D: 80 FB 2A                              cmp bl, '*'
+[ 226]    0450: 74 13                                 je do_multiplication
+[ 227]    0452: 80 FB 2F                              cmp bl, '/'
+[ 228]    0455: 74 14                                 je do_division
+[ 229]    0457: EB 26                                 jmp invalid_operator_error
+[ 230]        :                                       
+[ 231]    0459:                                       do_addition:
+[ 232]    0459: 03 C2                                 add ax, dx
+[ 233]    045B: 70 3A                                 jo overflow_error
+[ 234]    045D: EB CE                                 jmp evaluate_loop
+[ 235]        :                                       
+[ 236]    045F:                                       do_subtraction:
+[ 237]    045F: 2B C2                                 sub ax, dx
+[ 238]    0461: 70 34                                 jo overflow_error
+[ 239]    0463: EB C8                                 jmp evaluate_loop
+[ 240]        :                                       
+[ 241]    0465:                                       do_multiplication:
+[ 242]    0465: F7 EA                                 imul dx
+[ 243]    0467: 70 2E                                 jo overflow_error
+[ 244]    0469: EB C2                                 jmp evaluate_loop
+[ 245]        :                                       
+[ 246]    046B:                                       do_division:
+[ 247]    046B: 83 FA 00                              cmp dx, 0
+[ 248]    046E: 74 1F                                 je division_by_zero_error
+[ 249]    0470: 99                                    cwd
+[ 250]    0471: F7 FA                                 idiv dx
+[ 251]    0473: EB B8                                 jmp evaluate_loop
+[ 252]        :                                       
+[ 253]    0475:                                       evaluation_done:
+[ 254]    0475: EB 26                                 jmp evaluate_exit
+[ 255]        :                                       
+[ 256]    0477:                                       no_operands_error:
+[ 257]    0477: BA 7D 02                              lea dx, err_no_operand
+[ 258]    047A: E8 D4 FE                              call handle_error
+[ 259]    047D: EB 1E                                 jmp evaluate_exit
+[ 260]        :                                       
+[ 261]    047F:                                       invalid_operator_error:
+[ 262]    047F: BA 51 02                              lea dx, err_invalid_char
+[ 263]    0482: E8 CC FE                              call handle_error
+[ 264]    0485: EB 16                                 jmp evaluate_exit
+[ 265]        :                                       
+[ 266]    0487:                                       syntax_error:
+[ 267]    0487: BA DF 02                              lea dx, err_syntax
+[ 268]    048A: E8 C4 FE                              call handle_error
+[ 269]    048D: EB 0E                                 jmp evaluate_exit
+[ 270]        :                                       
+[ 271]    048F:                                       division_by_zero_error:
+[ 272]    048F: BA A1 02                              lea dx, err_div_by_zero
+[ 273]    0492: E8 BC FE                              call handle_error
+[ 274]    0495: EB 06                                 jmp evaluate_exit
+[ 275]        :                                       
+[ 276]    0497:                                       overflow_error:
+[ 277]    0497: BA BC 02                              lea dx, err_overflow
+[ 278]    049A: E8 B4 FE                              call handle_error
+[ 279]        :                                       
+[ 280]    049D:                                       evaluate_exit:
+[ 281]    049D: 5A                                    pop dx
+[ 282]    049E: 59                                    pop cx
+[ 283]    049F: 5B                                    pop bx
+[ 284]    04A0: 58                                    pop ax
+[ 285]    04A1: 5E                                    pop si
+[ 286]    04A2: C3                                    ret
+[ 287]        :                                       evaluate_equation endp
+[ 288]        :                                       
+[ 289]    04A3:                                       print_signed_number proc near
+[ 290]    04A3: 50                                    push ax
+[ 291]    04A4: 53                                    push bx
+[ 292]    04A5: 51                                    push cx
+[ 293]    04A6: 52                                    push dx
+[ 294]        :                                       
+[ 295]    04A7: A9 00 80                              test ax, 8000h
+[ 296]    04AA: 74 08                                 jz print_positive
+[ 297]        :                                       
+[ 298]    04AC: B4 02                                 mov ah, 02h
+[ 299]    04AE: B2 2D                                 mov dl, '-'
+[ 300]    04B0: CD 21                                 int 21h
+[ 301]        :                                       
+[ 302]    04B2: F7 D8                                 neg ax
+[ 303]        :                                       
+[ 304]    04B4:                                       print_positive:
+[ 305]    04B4: B9 00 00                              mov cx, 0
+[ 306]    04B7: BB 0A 00                              mov bx, 10
+[ 307]        :                                       
+[ 308]    04BA:                                       divide_loop_signed:
+[ 309]    04BA: 33 D2                                 xor dx, dx
+[ 310]    04BC: F7 F3                                 div bx
+[ 311]    04BE: 52                                    push dx
+[ 312]    04BF: 41                                    inc cx
+[ 313]    04C0: 3D 00 00                              cmp ax, 0
+[ 314]    04C3: 75 F5                                 jnz divide_loop_signed
+[ 315]        :                                       
+[ 316]    04C5:                                       print_loop_signed:
+[ 317]    04C5: 5A                                    pop dx
+[ 318]    04C6: 80 C2 30                              add dl, '0'
+[ 319]    04C9: B4 02                                 mov ah, 02h
+[ 320]    04CB: CD 21                                 int 21h
+[ 321]    04CD: E2 F6                                 loop print_loop_signed
+[ 322]        :                                       
+[ 323]    04CF: 5A                                    pop dx
+[ 324]    04D0: 59                                    pop cx
+[ 325]    04D1: 5B                                    pop bx
+[ 326]    04D2: 58                                    pop ax
+[ 327]    04D3: C3                                    ret
+[ 328]        :                                       print_signed_number endp
+[ 329]        :                                       
+[ 330]    04D4:                                       print_newline proc near
+[ 331]    04D4: B4 09                                 mov ah, 09h
+[ 332]    04D6: BA 8C 01                              lea dx, newline
+[ 333]    04D9: CD 21                                 int 21h
+[ 334]    04DB: C3                                    ret
+[ 335]        :                                       print_newline endp
+[ 336]        :                                       
+[ 337]        :                                       code_segment ends
+[ 338]        :                                       
+[ 339]        :                                       end start
+[ 340]        :                                       
+[ 341]        :                                       
+ 
+===================================================================================================
+ 
+
+
+
+
+===================================================================================================

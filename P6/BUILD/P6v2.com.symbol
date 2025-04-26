@@ -1,0 +1,57 @@
+< THE SYMBOL TABLE >  P6v2.com  --  emu8086 assembler version: 4.08 
+===================================================================================================
+Name                     	Offset    	Size      	Type      	Segment   
+===================================================================================================
+ALUMNO_MSG               	00100     	1         	VAR       	(NOSEG)   
+PROMPT_MSG               	00123     	1         	VAR       	(NOSEG)   
+RESULT_MSG               	0017A     	1         	VAR       	(NOSEG)   
+NEWLINE                  	0018C     	1         	VAR       	(NOSEG)   
+INPUT_BUFFER             	0018F     	1         	VAR       	(NOSEG)   
+TOKEN_BUFFER             	001CD     	2         	VAR       	(NOSEG)   
+TEMP_STACK               	001F5     	2         	VAR       	(NOSEG)   
+TEMP_STACK_PTR           	0021D     	2         	VAR       	(NOSEG)   
+TOKEN_COUNT              	0021F     	2         	VAR       	(NOSEG)   
+ERR_INPUT_LONG           	00221     	1         	VAR       	(NOSEG)   
+ERR_INVALID_CHAR         	00251     	1         	VAR       	(NOSEG)   
+ERR_NO_OPERAND           	0027D     	1         	VAR       	(NOSEG)   
+ERR_DIV_BY_ZERO          	002A1     	1         	VAR       	(NOSEG)   
+ERR_OVERFLOW             	002BC     	1         	VAR       	(NOSEG)   
+ERR_SYNTAX               	002DF     	1         	VAR       	(NOSEG)   
+CODE_SEGMENT             	00031     	-5        	SEGMENT   	(ITSELF)  
+START                    	00000     	-1        	LABEL     	code_segment
+HANDLE_ERROR             	00041     	-1        	NEAR      	code_segment
+TOKENIZE_EQUATION        	00051     	-1        	NEAR      	code_segment
+NEXT_TOKEN               	00063     	-1        	LABEL     	code_segment
+CHECK_OPERATOR           	00085     	-1        	LABEL     	code_segment
+PROCESS_OPERAND          	00097     	-1        	LABEL     	code_segment
+CHECK_PLUS_SIGN          	000A8     	-1        	LABEL     	code_segment
+READ_DIGIT               	000AF     	-1        	LABEL     	code_segment
+CONTINUE_OPERAND         	000CB     	-1        	LABEL     	code_segment
+SAVE_OPERAND             	000D1     	-1        	LABEL     	code_segment
+STORE_OPERAND            	000DD     	-1        	LABEL     	code_segment
+SAVE_OPERATOR            	000E9     	-1        	LABEL     	code_segment
+INVALID_CHAR             	000F5     	-1        	LABEL     	code_segment
+SKIP_CHAR                	000FB     	-1        	LABEL     	code_segment
+TOKENIZE_DONE            	000FF     	-1        	LABEL     	code_segment
+EVALUATE_EQUATION        	00106     	-1        	NEAR      	code_segment
+EVALUATE_LOOP            	0011D     	-1        	LABEL     	code_segment
+DO_ADDITION              	00149     	-1        	LABEL     	code_segment
+DO_SUBTRACTION           	0014F     	-1        	LABEL     	code_segment
+DO_MULTIPLICATION        	00155     	-1        	LABEL     	code_segment
+DO_DIVISION              	0015B     	-1        	LABEL     	code_segment
+EVALUATION_DONE          	00165     	-1        	LABEL     	code_segment
+NO_OPERANDS_ERROR        	00167     	-1        	LABEL     	code_segment
+INVALID_OPERATOR_ERROR   	0016F     	-1        	LABEL     	code_segment
+SYNTAX_ERROR             	00177     	-1        	LABEL     	code_segment
+DIVISION_BY_ZERO_ERROR   	0017F     	-1        	LABEL     	code_segment
+OVERFLOW_ERROR           	00187     	-1        	LABEL     	code_segment
+EVALUATE_EXIT            	0018D     	-1        	LABEL     	code_segment
+PRINT_SIGNED_NUMBER      	00193     	-1        	NEAR      	code_segment
+PRINT_POSITIVE           	001A4     	-1        	LABEL     	code_segment
+DIVIDE_LOOP_SIGNED       	001AA     	-1        	LABEL     	code_segment
+PRINT_LOOP_SIGNED        	001B5     	-1        	LABEL     	code_segment
+PRINT_NEWLINE            	001C4     	-1        	NEAR      	code_segment
+===================================================================================================
+[ 25/04/2025  --  08:36:28 p. m. ] 
+< END >
+ 

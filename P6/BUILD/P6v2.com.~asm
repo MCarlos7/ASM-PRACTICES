@@ -1,0 +1,344 @@
+org 100h
+
+; --- Segmento de Datos ---
+alumno_msg    db "Alumno: Carlos Alberto, Sec: D06", 0dh, 0ah, '$'
+prompt_msg    db "Ingrese una ecuación aritmética con operandos de 16 bits con signo (ej: 5+3*2-8/4): ", '$'
+result_msg    db "El resultado es: ", '$'
+newline       db 0dh, 0ah, '$'
+input_buffer  db 60, ?, 60 dup (' ')
+token_buffer  dw 20 dup (?)
+temp_stack    dw 20 dup (?)
+temp_stack_ptr dw offset temp_stack + 40
+token_count   dw 0
+
+; Mensajes de error
+err_input_long   db "Error: La ecuación excede la longitud máxima.", '$'
+err_invalid_char db "Error: Carácter inválido en la ecuación.", '$'
+err_no_operand   db "Error: Se esperaban más operandos.", '$'
+err_div_by_zero  db "Error: División por cero.", '$'
+err_overflow     db "Error: Desbordamiento aritmético.", '$'
+err_syntax       db "Error: Error de sintaxis en la ecuación.", '$'
+
+; --- Segmento de Código ---
+code_segment segment
+assume cs:code_segment
+
+start:
+mov sp, 0FFF8h
+
+mov ah, 09h
+lea dx, alumno_msg
+int 21h
+call print_newline
+
+mov ah, 09h
+lea dx, prompt_msg
+int 21h
+
+mov ah, 0Ah
+lea dx, input_buffer
+int 21h
+
+mov bl, input_buffer[1]
+mov bh, 0
+lea di, input_buffer[2]
+add di, bx
+mov byte ptr [di], '$'
+
+call tokenize_equation
+call evaluate_equation
+
+mov ah, 09h
+lea dx, result_msg
+int 21h
+
+call print_signed_number
+call print_newline
+
+mov ax, 4C00h
+int 20h
+
+; --- Subrutinas ---
+
+handle_error proc near
+push ax
+push dx
+mov ah, 09h
+int 21h
+call print_newline
+pop dx
+pop ax
+mov ax, 4C00h
+int 20h
+handle_error endp
+
+tokenize_equation proc near
+push si
+push di
+push ax
+push cx
+push bx
+push dx
+
+lea si, input_buffer[2]
+lea di, token_buffer
+mov word ptr [token_count], 0
+
+next_token:
+mov al, [si]
+cmp al, '$'
+je tokenize_done
+
+cmp al, ' '
+je skip_char
+
+cmp al, '-'
+je process_operand
+cmp al, '+'
+je process_operand
+cmp al, '0'
+jl check_operator
+cmp al, '9'
+jg check_operator
+jmp process_operand
+
+check_operator:
+cmp al, '+'
+je save_operator
+cmp al, '-'
+je save_operator
+cmp al, '*'
+je save_operator
+cmp al, '/'
+je save_operator
+jmp invalid_char
+
+process_operand:
+mov cx, 0
+mov bx, 0
+mov dl, 0
+cmp al, '-'
+jne check_plus_sign
+mov dl, 1
+inc si
+jmp read_digit
+check_plus_sign:
+cmp al, '+'
+jne read_digit
+inc si
+jmp read_digit
+
+read_digit:
+mov al, [si]
+cmp al, '0'
+jl save_operand
+cmp al, '9'
+jg save_operand
+sub al, '0'
+mov ah, 0
+push bx
+mov bx, 10
+mul bx
+pop bx
+add ax, bx
+jnc continue_operand
+jmp overflow_error
+
+continue_operand:
+mov bx, ax
+inc si
+inc cx
+jmp read_digit
+
+save_operand:
+cmp cx, 0
+je invalid_char
+cmp dl, 1
+jne store_operand
+neg bx
+store_operand:
+mov [di], bx
+add di, 2
+inc word ptr [token_count]
+jmp next_token
+
+save_operator:
+mov ah, 0
+mov [di], ax
+inc word ptr [token_count]
+inc si
+jmp next_token
+
+invalid_char:
+lea dx, err_invalid_char
+call handle_error
+
+skip_char:
+inc si
+jmp next_token
+
+tokenize_done:
+pop dx
+pop bx
+pop cx
+pop ax
+pop di
+pop si
+ret
+tokenize_equation endp
+
+evaluate_equation proc near
+push si
+push ax
+push bx
+push cx
+push dx
+
+lea si, token_buffer
+mov cx, word ptr [token_count]
+cmp cx, 0
+je no_operands_error
+
+mov ax, [si]
+add si, 2
+dec cx
+
+evaluate_loop:
+cmp cx, 0
+je evaluation_done
+
+mov bx, [si]
+add si, 2
+dec cx
+
+cmp cx, 0
+jl syntax_error
+
+mov dx, [si]
+add si, 2
+dec cx
+
+cmp bl, '+'
+je do_addition
+cmp bl, '-'
+je do_subtraction
+cmp bl, '*'
+je do_multiplication
+cmp bl, '/'
+je do_division
+jmp invalid_operator_error
+
+do_addition:
+add ax, dx
+jo overflow_error
+jmp evaluate_loop
+
+do_subtraction:
+sub ax, dx
+jo overflow_error
+jmp evaluate_loop
+
+do_multiplication:
+imul dx
+jo overflow_error
+jmp evaluate_loop
+
+do_division:
+cmp dx, 0
+je division_by_zero_error
+cwd
+idiv dx
+jmp evaluate_loop
+
+evaluation_done:
+jmp evaluate_exit
+
+no_operands_error:
+lea dx, err_no_operand
+call handle_error
+jmp evaluate_exit
+
+invalid_operator_error:
+lea dx, err_invalid_char
+call handle_error
+jmp evaluate_exit
+
+syntax_error:
+lea dx, err_syntax
+call handle_error
+jmp evaluate_exit
+
+division_by_zero_error:
+lea dx, err_div_by_zero
+call handle_error
+jmp evaluate_exit
+
+overflow_error:
+lea dx, err_overflow
+call handle_error
+
+evaluate_exit:
+pop dx
+pop cx
+pop bx
+pop ax
+pop si
+ret
+evaluate_equation endp
+
+print_signed_number proc near
+push ax
+push bx
+push cx
+push dx
+
+test ax, 8000h
+jz print_positive
+
+mov ah, 02h
+mov dl, '-'
+int 21h
+
+neg ax
+
+print_positive:
+mov cx, 0
+mov bx, 10
+
+divide_loop_signed:
+xor dx, dx
+div bx
+push dx
+inc cx
+cmp ax, 0
+jnz divide_loop_signed
+
+print_loop_signed:
+pop dx
+add dl, '0'
+mov ah, 02h
+int 21h
+loop print_loop_signed
+
+pop dx
+pop cx
+pop bx
+pop ax
+ret
+print_signed_number endp
+
+print_newline proc near
+mov ah, 09h
+lea dx, newline
+int 21h
+ret
+print_newline endp
+
+code_segment ends
+
+end start
+
+
+
+
+; [SOURCE]: D:\CARLOS\Cucei\BAJO NIVEL\ASM-PRACTICES\P6\P6v2.asm
